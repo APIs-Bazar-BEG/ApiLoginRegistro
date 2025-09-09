@@ -1,32 +1,15 @@
-const sql = require("mssql");
-require("dotenv").config();
+const mysql = require('mysql2/promise');
+require('dotenv').config(); 
 
-const dbConfig = {
+const pool = mysql.createPool({
+  host: process.env.DB_HOST,
   user: process.env.DB_USER,
-  password: process.env.DB_PASSWORD,
-  server: process.env.DB_SERVER,
-  database: process.env.DB_DATABASE,
-  options: {
-    encrypt: false,
-    trustServerCertificate: true,
-  },
-};
+  password: process.env.DB_PASSWORD, 
+  database: process.env.DB_NAME,
+  waitForConnections: true,
+  connectionLimit: 10,
+  queueLimit: 0
+});
 
-// LOG 5: Imprime la configuración para asegurarte de que las variables .env se cargaron
-console.log("Configuración de la base de datos:", dbConfig);
+module.exports = pool;
 
-async function getConnection() {
-  try {
-    // LOG 6: ¿Intenta conectar?
-    console.log("-> Intentando conectar a SQL Server...");
-    const pool = await sql.connect(dbConfig);
-    // LOG 7: Si ves este mensaje, ¡la conexión fue exitosa!
-    console.log("✅ Conexión a SQL Server establecida.");
-    return pool;
-  } catch (err) {
-    console.error("❌ Error de conexión a SQL Server:", err);
-    throw err;
-  }
-}
-
-module.exports = { getConnection, sql };

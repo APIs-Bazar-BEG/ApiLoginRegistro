@@ -1,17 +1,15 @@
 const express = require("express");
 require("dotenv").config();
-const loginRoutes = require("./routes/LoginRoutes");
 
+const loginRoutes = require("./routes/LoginRoutes");
+const usuariosRoutes = require("./routes/UsuariosRoutes");
 
 const app = express();
 app.use(express.json());
 
 // Rutas
 app.use("/auth", loginRoutes);
-
-app.get("/", (req, res) => {
-  res.send("🚀 API Login/Registro con Node + SQL Server funcionando");
-});
+app.use("/usuarios", usuariosRoutes);
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {

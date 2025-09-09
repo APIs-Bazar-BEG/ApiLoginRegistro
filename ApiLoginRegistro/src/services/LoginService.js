@@ -1,75 +1,59 @@
-const { getConnection, sql } = require("../db");
+const pool = require("../db"); // tu pool de MySQL
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 
+const JWT_SECRET = process.env.JWT_SECRET || "secretkey";
+
 async function registerUser({ nombre, apellido, email, password, rol_id }) {
-  const pool = await getConnection();
+  if (!nombre || !email || !password || !rol_id) {
+    throw new Error("Faltan datos obligatorios");
+  }
 
-  // Verificar si el email ya existe
-  const checkUser = await pool
-    .request()
-    .input("email", sql.VarChar, email)
-    .query("SELECT * FROM usuarios WHERE email = @email");
-
-  if (checkUser.recordset.length > 0) {
+  const [existing] = await pool.query(
+    "SELECT id FROM usuarios WHERE email = ?",
+    [email]
+  );
+  if (existing.length > 0) {
     throw new Error("El email ya está registrado");
   }
 
-  // Hashear contraseña
-  const hashedPassword = bcrypt.hashSync(password, 10);
+  const hashedPassword = await bcrypt.hash(password, 12);
 
-  // Insertar usuario
-  await pool
-    .request()
-    .input("nombre", sql.VarChar, nombre)
-    .input("apellido", sql.VarChar, apellido || null)
-    .input("email", sql.VarChar, email)
-    .input("password", sql.VarChar, hashedPassword)
-    .input("rol_id", sql.Int, rol_id || 2)
-    .query(
-      `INSERT INTO usuarios (nombre, apellido, email, password, rol_id) 
-       VALUES (@nombre, @apellido, @email, @password, @rol_id)`
-    );
+  const [result] = await pool.query(
+    "INSERT INTO usuarios (nombre, apellido, email, password, rol_id) VALUES (?, ?, ?, ?, ?)",
+    [nombre, apellido || null, email, hashedPassword, rol_id]
+  );
 
-  return { msg: "Usuario registrado correctamente ✅" };
+  return { id: result.insertId, nombre, email, rol_id };
 }
 
 async function loginUser({ email, password }) {
-  const pool = await getConnection();
+  if (!email || !password) {
+    throw new Error("Faltan email o contraseña");
+  }
 
-  const result = await pool
-    .request()
-    .input("email", sql.VarChar, email)
-    .query("SELECT * FROM usuarios WHERE email = @email");
-
-  if (result.recordset.length === 0) {
+  const [rows] = await pool.query("SELECT * FROM usuarios WHERE email = ?", [
+    email,
+  ]);
+  if (rows.length === 0) {
     throw new Error("Usuario no encontrado");
   }
 
-  const usuario = result.recordset[0];
-
-  // Comparar contraseñas
-  const isMatch = bcrypt.compareSync(password, usuario.password);
+  const user = rows[0];
+  const isMatch = await bcrypt.compare(password, user.password);
   if (!isMatch) {
     throw new Error("Contraseña incorrecta");
   }
 
-  // Crear token
   const token = jwt.sign(
-    { id: usuario.id, rol: usuario.rol_id },
-    process.env.JWT_SECRET,
-    { expiresIn: "2h" }
+    { id: user.id, nombre: user.nombre, email: user.email, rol_id: user.rol_id },
+    JWT_SECRET,
+    { expiresIn: "1h" }
   );
 
   return {
-    msg: "Login exitoso ✅",
     token,
-    usuario: {
-      id: usuario.id,
-      nombre: usuario.nombre,
-      email: usuario.email,
-      rol: usuario.rol_id,
-    },
+    user: { id: user.id, nombre: user.nombre, email: user.email, rol_id: user.rol_id },
   };
 }
 
