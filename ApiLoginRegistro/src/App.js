@@ -6,7 +6,11 @@ const usuariosRoutes = require("./routes/UsuariosRoutes");
 const rolesRoutes = require("./routes/RolesRoutes");
 
 const app = express();
-app.use(express.json());
+
+// Middlewares
+app.use(express.json()); // parsea JSON
+app.use(express.urlencoded({ extended: true })); // parsea form-data
+app.use("/uploads", express.static("uploads")); // sirve las imágenes
 
 // Rutas
 app.use("/auth", loginRoutes);
