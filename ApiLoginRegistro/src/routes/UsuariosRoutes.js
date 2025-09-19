@@ -1,31 +1,26 @@
 const express = require("express");
 const router = express.Router();
 const multer = require("multer");
-const path = require("path");
-const {
+const { 
   getAllUsuarios,
   getUsuarioById,
   createUsuario,
   updateUsuario,
-  deleteUsuario
+  deleteUsuario,
+  getFotoUsuario
 } = require("../controllers/UsuariosController");
 
-// Configuración multer
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, "uploads/usuarios"); // carpeta en la raíz
-  },
-  filename: function (req, file, cb) {
-    const ext = path.extname(file.originalname);
-    cb(null, Date.now() + ext);
-  }
-});
+// Nueva ruta para obtener la foto
+router.get("/:id/foto", getFotoUsuario);
+
+// Configuración multer en memoria
+const storage = multer.memoryStorage();
 const upload = multer({ storage });
 
 // CRUD de usuarios
 router.get("/", getAllUsuarios);
 router.get("/:id", getUsuarioById);
-router.post("/", upload.single("foto"), createUsuario); // 'foto' es el campo del form-data
+router.post("/", upload.single("foto"), createUsuario);
 router.put("/:id", upload.single("foto"), updateUsuario);
 router.delete("/:id", deleteUsuario);
 

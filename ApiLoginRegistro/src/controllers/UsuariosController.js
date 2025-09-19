@@ -1,6 +1,4 @@
 const usuariosService = require("../services/UsuariosService");
-const fs = require("fs");
-const path = require("path");
 
 // Obtener todos los usuarios
 async function getAllUsuarios(req, res) {
@@ -27,7 +25,7 @@ async function getUsuarioById(req, res) {
 async function createUsuario(req, res) {
   try {
     const { nombre, apellido, email, password, rol_id } = req.body;
-    const foto = req.file ? `/uploads/usuarios/${req.file.filename}` : null;
+    const foto = req.file ? req.file.buffer : null; // binario
 
     const usuario = await usuariosService.createUsuario({
       nombre,
@@ -48,21 +46,19 @@ async function updateUsuario(req, res) {
   try {
     const { id } = req.params;
     let { nombre, apellido, email, rol_id } = req.body;
-    let foto = req.body.foto;
 
-    if (req.file) {
-      // Borrar foto antigua si existe
-      const usuario = await usuariosService.getUsuarioById(id);
-      if (usuario && usuario.foto) {
-        const oldPath = path.join(__dirname, "..", usuario.foto);
-        if (fs.existsSync(oldPath)) fs.unlinkSync(oldPath);
-      }
-      foto = `/uploads/usuarios/${req.file.filename}`;
-    }
+    // si no viene foto nueva, la dejamos igual
+    let foto = req.file ? req.file.buffer : undefined;
 
-    const updated = await usuariosService.updateUsuario(id, { nombre, apellido, email, rol_id, foto });
+    const updated = await usuariosService.updateUsuario(id, {
+      nombre,
+      apellido,
+      email,
+      rol_id,
+      foto,
+    });
+
     if (!updated) return res.status(404).json({ error: "Usuario no encontrado" });
-
     res.json({ msg: "Usuario actualizado correctamente" });
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -80,10 +76,27 @@ async function deleteUsuario(req, res) {
   }
 }
 
+
+// Obtener solo la foto del usuario
+async function getFotoUsuario(req, res) {
+  try {
+    const usuario = await usuariosService.getUsuarioById(req.params.id);
+    if (!usuario || !usuario.foto) {
+      return res.status(404).send("Foto no encontrada");
+    }
+    res.set("Content-Type", "image/jpeg"); // o image/png según corresponda
+    res.send(Buffer.from(usuario.foto, "base64"));
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+}
+
+
 module.exports = {
   getAllUsuarios,
   getUsuarioById,
   createUsuario,
   updateUsuario,
   deleteUsuario,
+  getFotoUsuario // foto
 };

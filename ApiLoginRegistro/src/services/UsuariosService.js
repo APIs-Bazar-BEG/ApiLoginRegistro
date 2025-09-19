@@ -1,12 +1,21 @@
 const pool = require("../db");
 const bcrypt = require("bcryptjs");
 
+// Helper para formatear usuario con foto en Base64
+function formatUsuario(row) {
+  if (!row) return null;
+  return {
+    ...row,
+    foto: row.foto ? Buffer.from(row.foto).toString("base64") : null,
+  };
+}
+
 // Obtener todos los usuarios
 async function getAllUsuarios() {
   const [rows] = await pool.query(
     "SELECT id, nombre, apellido, email, rol_id, foto FROM usuarios"
   );
-  return rows;
+  return rows.map(formatUsuario);
 }
 
 // Obtener un usuario por ID
@@ -15,10 +24,10 @@ async function getUsuarioById(id) {
     "SELECT id, nombre, apellido, email, rol_id, foto FROM usuarios WHERE id = ?",
     [id]
   );
-  return rows[0] || null;
+  return formatUsuario(rows[0]);
 }
 
-// Crear un usuario (opcional para admin)
+// Crear un usuario
 async function createUsuario({ nombre, apellido, email, password, rol_id, foto }) {
   const hashedPassword = await bcrypt.hash(password, 12);
   const [result] = await pool.query(
@@ -26,16 +35,26 @@ async function createUsuario({ nombre, apellido, email, password, rol_id, foto }
      VALUES (?, ?, ?, ?, ?, ?)`,
     [nombre, apellido || null, email, hashedPassword, rol_id || 2, foto || null]
   );
-  return { id: result.insertId, nombre, email, rol_id: rol_id || 2, foto };
+  return { id: result.insertId, nombre, email, rol_id: rol_id || 2, foto: foto ? foto.toString("base64") : null };
 }
 
 // Actualizar usuario
 async function updateUsuario(id, { nombre, apellido, email, rol_id, foto }) {
-  const [result] = await pool.query(
-    "UPDATE usuarios SET nombre = ?, apellido = ?, email = ?, rol_id = ?, foto = ? WHERE id = ?",
-    [nombre, apellido, email, rol_id, foto || null, id]
-  );
-  return result.affectedRows > 0;
+  if (foto !== undefined) {
+    // actualizar con foto
+    const [result] = await pool.query(
+      "UPDATE usuarios SET nombre = ?, apellido = ?, email = ?, rol_id = ?, foto = ? WHERE id = ?",
+      [nombre, apellido, email, rol_id, foto, id]
+    );
+    return result.affectedRows > 0;
+  } else {
+    // actualizar sin tocar foto
+    const [result] = await pool.query(
+      "UPDATE usuarios SET nombre = ?, apellido = ?, email = ?, rol_id = ? WHERE id = ?",
+      [nombre, apellido, email, rol_id, id]
+    );
+    return result.affectedRows > 0;
+  }
 }
 
 // Eliminar usuario
