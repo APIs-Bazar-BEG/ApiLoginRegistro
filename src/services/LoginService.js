@@ -1,4 +1,4 @@
-const pool = require("../db"); // tu pool de MySQL
+const pool = require("../config/db"); // tu pool de MySQL
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 

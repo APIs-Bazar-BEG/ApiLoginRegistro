@@ -1,9 +1,9 @@
 const express = require("express");
 require("dotenv").config();
 
-const loginRoutes = require("./routes/LoginRoutes");
-const usuariosRoutes = require("./routes/UsuariosRoutes");
-const rolesRoutes = require("./routes/RolesRoutes");
+const loginRoutes = require("./src/routes/LoginRoutes");
+const usuariosRoutes = require("./src/routes/UsuariosRoutes");
+const rolesRoutes = require("./src/routes/RolesRoutes");
 
 const app = express();
 

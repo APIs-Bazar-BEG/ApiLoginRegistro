@@ -1,4 +1,4 @@
-const pool = require("../db");
+const pool = require("../config/db");
 
 // Obtener todos los roles
 async function getAllRoles() {
