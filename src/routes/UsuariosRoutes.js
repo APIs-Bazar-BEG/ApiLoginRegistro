@@ -16,12 +16,13 @@ router.get("/:id/foto", getFotoUsuario);
 // Configuración multer en memoria
 const storage = multer.memoryStorage();
 const upload = multer({ storage });
+const authMiddleware = require("../middlewares/authMiddleware");
 
 // CRUD de usuarios
-router.get("/", getAllUsuarios);
-router.get("/:id", getUsuarioById);
-router.post("/", upload.single("foto"), createUsuario);
-router.put("/:id", upload.single("foto"), updateUsuario);
-router.delete("/:id", deleteUsuario);
+router.get("/",authMiddleware, getAllUsuarios);
+router.get("/:id",authMiddleware, getUsuarioById);
+router.post("/",authMiddleware, upload.single("foto"), createUsuario);
+router.put("/:id",authMiddleware, upload.single("foto"), updateUsuario);
+router.delete("/:id",authMiddleware, deleteUsuario);
 
 module.exports = router;

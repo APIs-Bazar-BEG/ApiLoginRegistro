@@ -7,12 +7,15 @@ const {
   updateRol,
   deleteRol
 } = require("../controllers/RolesController");
+const authMiddleware = require("../middlewares/authMiddleware");
+
 
 // CRUD de roles
-router.get("/", getAllRoles);
-router.get("/:id", getRolById);
-router.post("/", createRol);
-router.put("/:id", updateRol);
-router.delete("/:id", deleteRol);
+
+router.get("/",authMiddleware, getAllRoles);
+router.get("/:id",authMiddleware, getRolById);
+router.post("/",authMiddleware, createRol);
+router.put("/:id",authMiddleware, updateRol);
+router.delete("/:id",authMiddleware, deleteRol);
 
 module.exports = router;

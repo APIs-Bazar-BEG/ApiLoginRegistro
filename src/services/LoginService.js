@@ -48,7 +48,7 @@ async function loginUser({ email, password }) {
   const token = jwt.sign(
     { id: user.id, nombre: user.nombre, email: user.email, rol_id: user.rol_id },
     JWT_SECRET,
-    { expiresIn: "1h" }
+    { expiresIn: "8h" }
   );
 
   return {
