@@ -25,7 +25,7 @@ router.get("/email/:email", usuariosController.getUsuarioByEmail);
 // CRUD de usuarios
 router.get("/", authMiddleware, getAllUsuarios);
 router.get("/:id", authMiddleware, getUsuarioById);
-router.post("/", authMiddleware, upload.single("foto"), createUsuario);
+router.post("/", upload.single("foto"), createUsuario);
 router.put("/:id", authMiddleware, upload.single("foto"), updateUsuario);
 router.delete("/:id", authMiddleware, deleteUsuario);
 
