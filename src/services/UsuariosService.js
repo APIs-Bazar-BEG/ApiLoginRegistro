@@ -66,10 +66,17 @@ async function deleteUsuario(id) {
   return result.affectedRows > 0;
 }
 
+// Buscar usuario por email
+async function findByEmail(email) {
+  const [rows] = await pool.query('SELECT * FROM usuarios WHERE email = ?', [email]);
+  return rows[0]; // devuelve un solo usuario o undefined
+}
+
 module.exports = {
   getAllUsuarios,
   getUsuarioById,
   createUsuario,
   updateUsuario,
   deleteUsuario,
+  findByEmail
 };

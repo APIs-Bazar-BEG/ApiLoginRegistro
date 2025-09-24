@@ -1,6 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const multer = require("multer");
+const usuariosController = require('../controllers/UsuariosController');
 const { 
   getAllUsuarios,
   getUsuarioById,
@@ -12,6 +13,9 @@ const {
 
 // Nueva ruta para obtener la foto
 router.get("/:id/foto", getFotoUsuario);
+
+// Buscar usuario por email
+router.get('/email/:email', (req, res) => usuariosController.getUsuarioByEmail(req, res));
 
 // Configuración multer en memoria
 const storage = multer.memoryStorage();

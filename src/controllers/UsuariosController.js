@@ -91,6 +91,23 @@ async function getFotoUsuario(req, res) {
   }
 }
 
+// Nuevo método para buscar por email
+async function getUsuarioByEmail(req, res) {
+  try {
+    const { email } = req.params;
+    const usuario = await usuariosService.findByEmail(email);
+
+    if (!usuario) {
+      return res.status(404).json({ message: 'Usuario no encontrado' });
+    }
+
+    res.json(usuario);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+}
+
+
 
 module.exports = {
   getAllUsuarios,
@@ -98,5 +115,6 @@ module.exports = {
   createUsuario,
   updateUsuario,
   deleteUsuario,
-  getFotoUsuario // foto
+  getFotoUsuario, // foto
+  getUsuarioByEmail //email
 };
